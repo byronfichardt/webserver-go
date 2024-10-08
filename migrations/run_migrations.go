@@ -1,5 +1,5 @@
-package main
+package migrations
 
 func main() {
-    Migrate()
+	Migrate()
 }

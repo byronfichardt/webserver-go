@@ -1,20 +1,20 @@
-package main
+package users
 
 import (
+	"database/sql"
+	"encoding/json"
+	"log"
 	"net/http"
 	"time"
-	"encoding/json"
-	"database/sql"
+
 	_ "github.com/go-sql-driver/mysql"
-	"log"
-	"fmt"
 )
 
 type User struct {
 	ID        int       `json:"id"`
-    Username  string    `json:"username"`
-    CreatedAt time.Time `json:"created_at"`
-    UpdatedAt time.Time `json:"updated_at"`
+	Username  string    `json:"username"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 func CreateUser(db *sql.DB) http.HandlerFunc {
@@ -31,18 +31,18 @@ func CreateUser(db *sql.DB) http.HandlerFunc {
 		}
 
 		w.WriteHeader(http.StatusCreated)
-        w.Write([]byte("User created successfully"))
+		w.Write([]byte("User created successfully"))
 	}
 }
 
 func ListUsers(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		query := "SELECT id, username, created_at, updated_at FROM users"
-        rows,err := db.Query(query)
+		rows, err := db.Query(query)
 
 		if err != nil {
 			http.Error(w, "Failed to query users", http.StatusInternalServerError)
-            return
+			return
 		}
 
 		defer rows.Close()
@@ -53,15 +53,15 @@ func ListUsers(db *sql.DB) http.HandlerFunc {
 			var user User
 			if err := rows.Scan(&user.ID, &user.Username, &user.CreatedAt, &user.UpdatedAt); err != nil {
 				http.Error(w, "Failed to scan user", http.StatusInternalServerError)
-                return
-			} 
+				return
+			}
 			users = append(users, user)
 		}
 
 		if err := rows.Err(); err != nil {
-            http.Error(w, "Error iterating over users", http.StatusInternalServerError)
-            return
-        }
+			http.Error(w, "Error iterating over users", http.StatusInternalServerError)
+			return
+		}
 
 		w.Header().Set("Content-Type", "application/json")
 
@@ -77,12 +77,12 @@ func EditUser(db *sql.DB) http.HandlerFunc {
 		password := r.FormValue("password")
 
 		_, err := db.Exec("UPDATE users SET password = ? WHERE username = ?", password, username)
-        if err != nil {
-            http.Error(w, "Failed to update user", http.StatusInternalServerError)
-            return
-        }
+		if err != nil {
+			http.Error(w, "Failed to update user", http.StatusInternalServerError)
+			return
+		}
 
-        w.WriteHeader(http.StatusOK)
-        w.Write([]byte("User updated successfully"))
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("User updated successfully"))
 	}
 }

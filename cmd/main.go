@@ -2,18 +2,17 @@ package main
 
 import (
 	"database/sql"
-	_ "github.com/go-sql-driver/mysql"
-	"net/http"
 	"log"
+	"net/http"
+	"webServer/internal/routes"
 
+	_ "github.com/go-sql-driver/mysql"
 )
 
 func main() {
 	db := connectDb()
 
-	http.HandleFunc("POST /user/create", CreateUser(db))
-	http.HandleFunc("POST /user/edit", EditUser(db))
-	http.HandleFunc("GET /user", ListUsers(db))
+	routes.Router(db)
 
 	fs := http.FileServer(http.Dir("static/"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
@@ -32,4 +31,3 @@ func connectDb() *sql.DB {
 
 	return db
 }
-
